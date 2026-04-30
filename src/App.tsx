@@ -30,7 +30,7 @@ import {
   ShoppingBag,
   Bell,
   Search,
-  Upload
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -197,6 +197,16 @@ export default function App() {
     setCurrentUser(null);
     setView('auth');
   };
+
+  // Auto-logout if user is deleted from DB
+  useEffect(() => {
+    if (currentUser && users.length > 0) {
+      const userExists = users.find(u => u.id === currentUser.id);
+      if (!userExists) {
+        handleLogout();
+      }
+    }
+  }, [users, currentUser]);
 
   const syncUsers = (newUsers: User[]) => {
     setUsers(newUsers);
@@ -1262,6 +1272,12 @@ function AdminPanel({ users, setUsers, todayDate }: { users: User[], setUsers: (
     setUsers(users.filter(u => u.id !== id));
   };
 
+  const handleDeleteUser = (id: string) => {
+    if (window.confirm('Tem certeza que deseja excluir este usuário? O acesso será revogado imediatamente.')) {
+      setUsers(users.filter(u => u.id !== id));
+    }
+  };
+
   const handleCreateSenior = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -1364,6 +1380,15 @@ function AdminPanel({ users, setUsers, todayDate }: { users: User[], setUsers: (
                       </p>
                     </div>
                   </div>
+                  {u.role !== 'GERENTE' && (
+                    <button 
+                      onClick={() => handleDeleteUser(u.id)}
+                      className="p-2 text-slate-300 hover:text-[#E3000F] transition-colors"
+                      title="Excluir Usuário"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -1482,6 +1507,13 @@ function AdminPanel({ users, setUsers, todayDate }: { users: User[], setUsers: (
                       <p className="text-sm font-bold">{u.nome}</p>
                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{u.turno} • {u.matricula}</p>
                     </div>
+                    <button 
+                      onClick={() => handleDeleteUser(u.id)}
+                      className="p-2 text-slate-300 hover:text-[#E3000F] transition-colors"
+                      title="Excluir Usuário"
+                    >
+                      <Trash2 size={20} />
+                    </button>
                   </div>
                 ))
               ) : (
